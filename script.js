@@ -1,7 +1,9 @@
-var apikey = ''; // Put your API key here
+ // Put your API key here
 
 // Use this function to do stuff with your results. 
 // It is called after 'search' is executed.
+$wgCrossSiteAJAXdomains = ['*.wikipedia.org'];
+
 function searchCallback(data) {
 	console.log(data);
 	var content = $('#results');
@@ -16,43 +18,50 @@ function searchCallback(data) {
 
 $(document).ready(function() {
 	$('#random').on('click', function(e){
-		// var query = $('#search').val();
-		// console.log('Searching: ', query);
+		console.log('clicked!');
 		randomThingGetter();
 	})
 });
 
-xhr.setRequestHeader( 'Api-User-Agent', 'Example/1.0' );
-
-// Using jQuery
-$.ajax( {
-    url: remoteUrlWithOrigin,
-    data: queryData,
-    dataType: 'json',
-    type: 'POST',
-    headers: { 'Api-User-Agent': 'Example/1.0' },
-    success: function(data) {
-        searchCallback(data.results);
-    }
+//Ajax for getting the random entry from Wikipedia
+function randomThingGetter(){
+	console.log('working');
+	$.ajax( {
+    url: 'https://en.wikipedia.org/w/api.php',
+    data: {
+        action: 'query',
+        meta: 'tokens',
+        format: 'json',
+        origin: 'https://www.mediawiki.org'
+    },
+    xhrFields: {
+        withCredentials: true
+    },
+    dataType: 'json'
+} ).then( function ( data ) {
+    $.ajax( {
+        url: 'https://en.wikipedia.org/w/api.php?action=query&list=random&format=jsonfm&rnlimit=1',
+        method: 'GET',
+        data: {
+            action: 'options',
+            format: 'json',
+            token: data.query.tokens.csrftoken,
+            optionname: 'userjs-test',
+            optionvalue: 'Hello world!'
+        },
+        xhrFields: {
+            withCredentials: true
+         },
+        dataType: 'json'
+    } );
 } );
+};
 
-// Using mw.Api, specify it when creating the mw.Api object
-var api = new mw.Api( {
-    ajax: {
-        url: 'https://en.wikipedia.org/w/api.php?action=query&list=random&format=json&rnlimit=1',
-        headers: { 'Api-User-Agent': 'Example/1.0' }
-    }
-} ).done(function(data) {
-    // do something with data
-});
-
-// function randomThingGetter(){
-// 	// console.log(working);
-// 	$.ajax(){
+// 	$.ajax ({
 // 	    type: 'GET',
-// 	    dataType: 'json',
+// 	    dataType: 'jsonfm',
 // 	    crossDomain: true,
-// 	    url: 'https://en.wikipedia.org/w/api.php?action=query&list=random&format=json&rnlimit=1',
+// 	    url: 'https://en.wikipedia.org/w/api.php?action=query&list=random&format=jsonfm&rnlimit=1',
 // 	    complete: function() {
 // 	        console.log('ajax complete');
 // 	    },
@@ -63,4 +72,4 @@ var api = new mw.Api( {
 // 	    	console.log('error!');
 // 	    }
 // 	});    
-// };	
+// };	 
